@@ -1,15 +1,19 @@
 {
-  "name": "webapp-lab",
+  "name": "webapp-docker-lab",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Simple web app for Docker & Azure Container Instances Lab",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "node app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0"
-  }
+    "express": "^4.18.2",
+    "os": "^0.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Lab 10",
+  "license": "MIT"
 }
