@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab 10 - Docker Container</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🐳 Lab 10 : Docker Container</h1>
+            <p class="subtitle">Application Web Simple dans Azure Container
+                Instances</p>
+        </header>
+        <main>
+            <div class="info-card">
+                <h2>📊 Informations du Container</h2>
+                <div id="container-info">
+                    <p>Chargement...</p>
+                </div>
+                <button onclick="loadInfo()">🔄 Actualiser</button>
+            </div>
+            <div class="info-card">
+                <h2>🧪 Tests d'API</h2>
+                <div class="api-tests">
+                    <button onclick="testHealth()">💚 Health Check</button>
+                    <button onclick="testLoadTest()">⚡ Load Test</button>
+                    <button onclick="testError()">❌ Test Erreur</button>
+                </div>
+                <div id="test-results"></div>
+            </div>
+            <div class="info-card">
+                <h2>🔗 Endpoints disponibles</h2>
+                <ul class="endpoints">
+                    <li><code>GET /</code> - Page d'accueil</li>
+                    <li><code>GET /api/info</code> - Infos système</li>
+                    <li><code>GET /health</code> - Health check</li>
+                    <li><code>GET /api/load-test</code> - Test de charge</li>
+                </ul>
+            </div>
+        </main>
+        <footer>
+            <p>🐳 Conteneurisé avec Docker • ☁ Hébergé sur Azure Container
+                Instances</p>
+        </footer>
+    </div>
+    <script>
+        // Charger les informations du container
+        async function loadInfo() {
+            try {
+                const response = await fetch('/api/info');
+                const data = await response.json();
+                document.getElementById('container-info').innerHTML = `
+ <div class="info-grid">
+ <div><strong>Container:</strong> ${data.container}
+ </div>
+ <div><strong>Version:</strong> ${data.version}</div>
+ <div><strong>Hostname:</strong> ${data.hostname}</div>
+ <div><strong>Platform:</strong> ${data.platform}
+ (${data.architecture})</div>
+ <div><strong>Node.js:</strong> ${data.nodeVersion}
+ </div>
+ <div><strong>Uptime:</strong>
+ ${Math.floor(data.uptime)}s</div>
+ <div><strong>Environment:</strong> ${data.env}</div>
+ <div><strong>Timestamp:</strong> ${new
+                        Date(data.timestamp).toLocaleString()}</div>
+ </div>
+ `;
+            } catch (error) {
+                document.getElementById('container-info').innerHTML =
+                    '<p class="error">❌ Erreur de chargement: ' +
+                    error.message + '</p>';
+            }
+        }
+        // Test health check
+        async function testHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                showTestResult('Health Check', '✅ ' + data.status,
+                    'success');
+            } catch (error) {
+                showTestResult('Health Check', '❌ ' + error.message,
+                    'error');
+            }
+        }
+        // Test de charge
+        async function testLoadTest() {
+            const startTime = Date.now();
+            try {
+                const response = await fetch('/api/load-test');
+                const data = await response.json();
+                const totalTime = Date.now() - startTime;
+                showTestResult('Load Test',
+                    `✅ Completed in ${data.duration} (total: 
+${totalTime}ms)`, 'success');
+            } catch (error) {
+                showTestResult('Load Test', '❌ ' + error.message, 'error');
+            }
+        }
+        // Test d'erreur
+        async function testError() {
+            try {
+                const response = await fetch('/nonexistent');
+                const data = await response.json();
+                showTestResult('Error Test', `❌ ${data.error}`, 'error');
+            } catch (error) {
+                showTestResult('Error Test', '❌ ' + error.message, 'error');
+            }
+        }
+        // Afficher le résultat d'un test
+        function showTestResult(test, message, type) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultElement = document.createElement('div');
+            resultElement.className = `test-result ${type}`;
+            resultElement.innerHTML = `<strong>${test}:</strong> ${message}`;
+            resultsDiv.insertBefore(resultElement, resultsDiv.firstChild);
+            // Garder seulement les 5 derniers résultats
+            while (resultsDiv.children.length > 5) {
+                resultsDiv.removeChild(resultsDiv.lastChild);
+            }
+        }
+        // Charger les infos au démarrage
+        window.addEventListener('load', loadInfo);
+        // Auto-refresh toutes les 30 secondes
+        setInterval(loadInfo, 30000);
+    </script>
+</body>
+
+</html>
